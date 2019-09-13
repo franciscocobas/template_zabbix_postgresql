@@ -6,31 +6,30 @@
 Templates to monitor PostgreSQL by Zabbix.\
 This template was tested on Zabbix 4.2.1 and PostgreSQL vesions 9.6, 10 and 11 on Linux and Windows.
 
-## Setup
+## Configuración
+1. Insalar Zabbix agent y crear un usuario read-only llamado `zbx_monitor` con el acceso adecuado al servidor PostgreSQL
 
-1. Install Zabbix agent and create a read-only `zbx_monitor` user with proper access to your PostgreSQL server.
-
-    For PostgreSQL version 10 and above:
+    Para la versión de PostgreSQL 10 o mayor ejecutar:
 
     ```sql
     CREATE USER zbx_monitor WITH PASSWORD '<PASSWORD>' INHERIT;
     GRANT pg_monitor TO zbx_monitor;
     ```
 
-    For older PostgreSQL versions:
+    Para versiones mas viejas usar:
 
     ```sql
     CREATE USER zbx_monitor WITH PASSWORD '<PASSWORD>';
     GRANT SELECT ON pg_stat_database TO zbx_monitor;
     ```
 
-2. Copy `postgresql/` to Zabbix agent home directory `/var/lib/zabbix/`. The `postgresql/` directory contains the files needed to obtain metrics from PostgreSQL.
+2. Copiar la carpeta `postgresql/` a la carpeta home de Zabbix agent `/var/lib/zabbix/`. Verificar que exista la carpeta, si no existe entonces crearla previamente. La carpeta `postgresql/` contiene los archivos necesarios para obtener las métricas de PostgreSQL.
 
-3. Copy `template_db_postgresql.conf` to Zabbix agent configuration directory `/etc/zabbix/zabbix_agentd.d/` and restart Zabbix agent service.
+3. Copiar el archivo `template_db_postgresql.conf` al directorio de configuración de Zabbix agent /etc/zabbix/zabbix_agentd.d/` y reiniciar el servicio de Zabbix agent `systemctl restart zabbix-agent`
 
-4. Edit `pg_hba.conf` to allow connections from Zabbix agent https://www.postgresql.org/docs/current/auth-pg-hba-conf.html.
+4. Editar el archivo `pg_hba.conf` de PostgreSQL para permitir conecciones desde el Zabbix agent https://www.postgresql.org/docs/current/auth-pg-hba-conf.html.
 
-    Add rows (for example):
+    Agregar lineas (por ejemplo):
 
     ```bash
     host all zbx_monitor 127.0.0.1/32 trust
@@ -38,29 +37,20 @@ This template was tested on Zabbix 4.2.1 and PostgreSQL vesions 9.6, 10 and 11 o
     host all zbx_monitor ::0/0 md5
     ```
 
-5. If you need to monitor the remote server then create `.pgpass` file in Zabbix agent home directory `/var/lib/zabbix/` and add the connection details with the instance, port, database, user and password information in the below format https://www.postgresql.org/docs/current/libpq-pgpass.html.
+5. Crear un archivo llamado `.pgpass` en el directorio home del Zabbix agent `/var/lib/zabbix/`. El archivo tiene que tener permisos de lectura y escritura sólo para el dueño, además el dueño tiene que ser el usuario `zabbix`. En el archivo agregar los detalles de la conección con la información instancia, el puerto, la base de datos, el usuario y la contraseña en el siguiente formato https://www.postgresql.org/docs/current/libpq-pgpass.html.
 
     Example 1:
-
-    ```bash
-    <REMOTE_HOST1>:5432:postgres:zbx_monitor:<PASSWORD>
-
-    <REMOTE_HOST2>:5432:postgres:zbx_monitor:<PASSWORD>
-    ...
-    <REMOTE_HOSTN>:5432:postgres:zbx_monitor:<PASSWORD>
-    ```
-
-    Example 2:
+    Ejemplo:
 
     ```bash
     *:5432:postgres:zbx_monitor:<PASSWORD>
     ```
 
-6. Import `template_db_postgresql.xml` to Zabbix and link it to the target host
+6. Importar `template_db_postgresql.xml` a Zabbix y linkear con el host que queremos.
 
-## Zabbix configuration
+## Configuración de Zabbix
 
-No specific Zabbix configuration is required.
+No es necesario ninguna configuración para Zabbix.
 
 ### Macros used
 
